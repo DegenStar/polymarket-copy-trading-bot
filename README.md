@@ -1,93 +1,109 @@
-# 🤖 Polymarket BTC Trading Bot — Beginner's Guide
+# 🤖 Polymarket BTC Up/Down Trading Bot
 
-> **What does this bot do?**  
-> It automatically trades on [Polymarket](https://polymarket.com) — a prediction market where you bet on whether Bitcoin's price will go **Up ⬆️** or **Down ⬇️** in the next 5 minutes. The bot watches prices, places trades, and collects winnings — all on autopilot.
+> **A beginner-friendly guide to setting up and running your first automated trading bot on Polymarket.**
 
-> ⚠️ **Real money warning:** This bot places real trades with real money on the Polygon blockchain. Start small, read everything, and never risk money you can't afford to lose.
-
----
-
-## 📖 Table of Contents
-
-1. [How It Works (Plain English)](#-how-it-works-plain-english)
-2. [What You'll Need Before Starting](#-what-youll-need-before-starting)
-3. [Step-by-Step Setup](#-step-by-step-setup)
-4. [Running the Bot](#-running-the-bot)
-5. [Understanding the Settings](#-understanding-the-settings)
-6. [Copy Trading (Follow Someone Else's Trades)](#-copy-trading-follow-someone-elses-trades)
-7. [Reading the Logs](#-reading-the-logs)
-8. [Common Problems & Fixes](#-common-problems--fixes)
-9. [Safety Tips for Beginners](#-safety-tips-for-beginners)
+**Repository:** [https://github.com/Parallax-Trading/polymarket-copy-trading-bot](https://github.com/Parallax-Trading/polymarket-copy-trading-bot)
 
 ---
 
-## 💡 How It Works (Plain English)
+## ⚠️ Important Before You Start
 
-Every 5 minutes, Polymarket opens a new market asking: **"Will Bitcoin's price be higher or lower in 5 minutes?"**
+This bot places **real money trades** on the blockchain. Please read this before doing anything:
 
-You can buy "Up" shares or "Down" shares. The winning side pays out $1 per share, and losers get $0.
-
-**The bot's strategy:**
-
-1. **Finds the next 5-minute BTC market** right before it opens.
-2. **Posts buy orders on both sides** (both Up and Down) at slightly different prices — like a store buying wholesale.
-3. **Grabs deals** when the combined price of Up + Down is less than $1 (locking in a guaranteed profit).
-4. **Cashes out matched pairs** — if it holds both Up and Down shares of equal size, it can merge them back into cash.
-5. **Collects winnings** after the market resolves.
-
-There's also a **Copy Trading** mode where it just watches what a top trader buys and mirrors their trades automatically.
+- You can **lose money**. This is not guaranteed to be profitable.
+- Start with **very small amounts** (e.g. $5–$10) while you're learning.
+- Use a **separate, dedicated wallet** — never your main crypto wallet.
+- This is a tool for experienced users who understand the risks. If you're brand new to crypto trading, take time to learn the basics first.
 
 ---
 
-## 🧰 What You'll Need Before Starting
+## 📖 What Does This Bot Actually Do?
 
-Before installing anything, make sure you have these:
+In plain English: Polymarket runs short-duration prediction markets where you can bet on whether Bitcoin's price will go **Up** or **Down** in the next 5 minutes. Every pair of Up + Down tokens always resolves to a combined value of $1.
 
-| Requirement | What It Is | Where to Get It |
-|---|---|---|
-| **Node.js 18+** | The programming runtime the bot uses | [nodejs.org](https://nodejs.org) — download "LTS" version |
-| **Polymarket account** | Your prediction market account | [polymarket.com](https://polymarket.com) — sign up free |
-| **Polygon wallet** | A crypto wallet for Polygon network | Use MetaMask at [metamask.io](https://metamask.io) |
-| **Private key** | A secret key to let the bot sign transactions | Exported from your wallet (see note below) |
-| **Proxy wallet address** | A special Polymarket-generated wallet | Found in your Polymarket account settings |
-| **USDC on Polygon** | The currency used to trade | Buy on an exchange and bridge to Polygon |
-| **MATIC tokens** | Pays for transaction fees ("gas") | Buy a small amount (~$5 worth) on any exchange |
-| **Polygon RPC URL** | An internet connection point to the blockchain | Free at [alchemy.com](https://alchemy.com) or [infura.io](https://infura.io) |
+This bot exploits small pricing gaps in those markets:
 
-> 🔐 **What is a private key?**  
-> Your private key is like the master password for your wallet. In MetaMask: click the three dots → Account Details → Export Private Key. **Never share it with anyone.** Use a dedicated wallet just for this bot — not your main wallet.
+1. It watches for a moment when you can buy **both** Up and Down tokens for a combined price **less than $1**.
+2. It buys both sides simultaneously — no matter which direction Bitcoin moves, the pair is worth $1 at resolution.
+3. The difference between what you paid and $1 is your profit.
 
-> 🔐 **What is a proxy wallet?**  
-> Polymarket creates a special "proxy" wallet linked to your account for trading. Find it by logging into Polymarket, going to your profile, and looking in the settings or developer section.
+It also includes a **copy-trading mode** that mirrors the trades of a target wallet you choose to follow.
 
 ---
 
-## 🚀 Step-by-Step Setup
+## 📊 Performance Screenshots
 
-### Step 1 — Download the Bot
+Here's what the bot's activity looks like in practice:
 
-Open your terminal (Command Prompt on Windows, Terminal on Mac/Linux) and run:
+### 1-Day Performance
+![1D performance view](img/Screenshot_3.png)
 
+### Past Week Performance
+![Past week performance view](img/Screenshot_1.png)
+
+### All-Time Performance
+![All-time performance view](img/Screenshot_2.png)
+
+### Redeem History
+![Redeem-heavy history view](img/Screenshot_4.png)
+
+### Mixed Trade Activity
+![Mixed buy, loss, and redeem activity](img/Screenshot_5.png)
+
+---
+
+## 🗺️ Choose Your Path
+
+This repo has two main modes. Pick the one that fits your goal:
+
+| Mode | What it does | Best for |
+|------|-------------|----------|
+| **Main Arb Bot** | Automatically trades 5-min BTC markets | Hands-off automated trading |
+| **Copy Trader** | Mirrors trades from a wallet you choose | Following a successful trader |
+
+---
+
+## 🛠️ What You'll Need
+
+Before installing anything, make sure you have all of the following:
+
+### Required
+- **A computer** running Windows, Mac, or Linux
+- **Node.js version 18 or newer** — [Download here](https://nodejs.org). To check your version, run `node --version` in your terminal.
+- **A Polymarket account** — [Sign up at polymarket.com](https://polymarket.com)
+- **A Polygon wallet** — this is where your funds live (e.g. MetaMask set to Polygon network)
+- **Your wallet's private key** — the secret key for your trading wallet (⚠️ never share this with anyone)
+- **Your Polymarket proxy wallet address** — found in your Polymarket account settings
+- **USDC on Polygon** — the stablecoin used for trading (not Ethereum USDC, it must be on Polygon)
+- **A small amount of MATIC** — Polygon's native token, used to pay for gas fees (a few dollars' worth is enough)
+
+### Strongly Recommended
+- A **private Polygon RPC endpoint** from a service like [Alchemy](https://alchemy.com) or [Infura](https://infura.io). The free public RPC can be unreliable. Both services have free tiers.
+
+---
+
+## 🚀 Installation (Step by Step)
+
+### Step 1 — Download the repository
+
+If you have Git installed:
 ```bash
-git clone https://github.com/Parallax-Trading/polymarket-copy-trading-bot
+git clone https://github.com/Parallax-Trading/polymarket-copy-trading-bot.git
 cd polymarket-copy-trading-bot
 ```
 
-> **Don't have git?** Download it from [git-scm.com](https://git-scm.com) first.
+Or click the green **Code** button on GitHub and choose **Download ZIP**, then unzip it.
 
----
+### Step 2 — Install dependencies
 
-### Step 2 — Install Dependencies
-
+Open a terminal inside the project folder and run:
 ```bash
 npm install
 ```
 
-This downloads all the code libraries the bot needs. Wait for it to finish (may take a minute).
+This downloads all the libraries the bot needs. It may take a minute.
 
----
-
-### Step 3 — Create Your Settings File
+### Step 3 — Create your configuration file
 
 **On Mac/Linux:**
 ```bash
@@ -99,294 +115,242 @@ cp .env.example .env
 Copy-Item .env.example .env
 ```
 
-This creates a `.env` file — your personal settings file. Now open it in any text editor (Notepad works fine).
+This creates a file called `.env` where you'll put all your private settings. This file stays on your computer only — it is never uploaded anywhere.
 
----
+### Step 4 — Fill in your `.env` file
 
-### Step 4 — Fill In Your Settings
+Open `.env` in any text editor (Notepad, VS Code, etc.) and fill in your details. See the configuration section below for a full explanation of every setting.
 
-Open `.env` and find these lines. Fill in **your** information:
+### Step 5 — Run the bot
 
-```env
-# --- REQUIRED: Your wallet details ---
-PRIVATE_KEY=your_private_key_goes_here
-PROXY_WALLET=your_polymarket_proxy_wallet_address_goes_here
-POLYGON_RPC=https://polygon-mainnet.g.alchemy.com/v2/YOUR_ALCHEMY_KEY_HERE
-
-# --- RECOMMENDED: Start with small amounts ---
-MAX_SPEND_PER_MARKET=5
-LADDER_SIZE_PER_LEVEL_USDC=0.50
-MAX_LOSS_PER_HOUR_USDC=10
+```bash
+npm start
 ```
 
-> 💡 **Tip on RPC:** Sign up at [alchemy.com](https://alchemy.com), create a Polygon app, and copy your API key URL. This is much more reliable than free public endpoints.
-
-> 💡 **Leave `POLY_API_KEY`, `POLY_API_SECRET`, and `POLY_API_PASSPHRASE` blank.** The bot generates these automatically from your private key on first run.
+That's it! The bot will start logging activity to your terminal and to a file called `bot.log`.
 
 ---
 
-### Step 5 — Verify Everything Looks Right
+## ⚙️ Configuration Guide
 
-Double-check:
-- [ ] `PRIVATE_KEY` is filled in (long string of letters and numbers)
-- [ ] `PROXY_WALLET` is filled in (starts with `0x`)
-- [ ] `POLYGON_RPC` is a real URL (not the placeholder text)
-- [ ] You have USDC and some MATIC in your wallet
-- [ ] Your spend caps are set low for your first test run
+Your `.env` file controls everything. Here's what each setting means, explained in plain English.
+
+### 🔑 Essential Settings (Required)
+
+These **must** be filled in or the bot won't start:
+
+| Setting | What to put here |
+|---------|-----------------|
+| `PRIVATE_KEY` | The private key of your dedicated trading wallet. Looks like a long string of letters and numbers. Keep this secret! |
+| `PROXY_WALLET` | Your Polymarket proxy wallet address. Find this in your Polymarket account settings. Starts with `0x`. |
+| `POLYGON_RPC` | Your RPC URL from Alchemy or Infura. Looks like `https://polygon-mainnet.g.alchemy.com/v2/your-key-here`. |
+
+---
+
+### 📈 Main Arb Bot Settings
+
+These control how aggressively the bot trades. **Start with conservative (smaller) values.**
+
+| Setting | What it does | Beginner tip |
+|---------|-------------|--------------|
+| `MAX_SPEND_PER_MARKET` | Maximum USDC to spend in one 5-minute market | Start with `5` (=$5) |
+| `TARGET_EDGE` | Minimum profit margin before the bot buys. `0.02` means it needs at least 2 cents per dollar of edge. | Higher = safer, fewer trades |
+| `MERGE_THRESHOLD_USDC` | Minimum matched pair size before merging back to USDC | Leave at default to start |
+| `MAX_TAKER_FILL_USDC` | Max size for a single buy order | Keep this small at first |
+| `MAX_INVENTORY_IMBALANCE_USDC` | Stops the bot if one side gets too much larger than the other | Safety guardrail — leave it |
+| `COMBINED_ASK_STOP` | Hard stop if the market price becomes unfavorable | Safety guardrail — leave it |
+| `MAX_LOSS_PER_HOUR_USDC` | The bot stops if it loses this much in an hour | Set this to a number you're comfortable losing |
+| `LADDER_LEVELS` | List of price points to post orders at on each side | Leave at default to start |
+| `LADDER_SIZE_PER_LEVEL_USDC` | How much to put at each price level | Start small (e.g. `1`) |
+
+---
+
+### 👛 API Credentials (Optional — Auto-Generated)
+
+```
+POLY_API_KEY=
+POLY_API_SECRET=
+POLY_API_PASSPHRASE=
+```
+
+**Leave these blank on your first run.** The bot will automatically generate them from your wallet. Only fill these in if you've been given credentials directly from Polymarket.
+
+---
+
+### 🔁 Copy Trading Settings
+
+If you want to follow another trader instead of running the arb bot, use these settings.
+
+#### Simple Copy Watcher (runs alongside the main bot)
+
+| Setting | What it does |
+|---------|-------------|
+| `TARGET_WALLET` | The Polymarket wallet address you want to mirror |
+| `COPY_TRADE_BUY_PERCENT` | What percentage of their trade size to copy. `50` means you spend 50% of what they spend. |
+| `COPY_TRADE_POLL_MS` | How often (in milliseconds) to check for new trades. `5000` = every 5 seconds. |
+
+#### Dedicated Copy Trader (standalone mode)
+
+| Setting | What it does | Example |
+|---------|-------------|---------|
+| `COPY_TARGETS` | Comma-separated wallet addresses to follow | `0xabc...,0xdef...` |
+| `COPY_SIZE_MODE` | How to size your copy trades | `FIXED` (easiest for beginners) |
+| `COPY_FIXED_USDC` | If using FIXED mode, how much to spend per copied trade | `2` |
+| `COPY_MAX_USDC_PER_TRADE` | Hard cap per single trade | `5` |
+| `COPY_MAX_USDC_PER_HOUR` | Maximum spend in any one hour | `20` |
+| `COPY_MAX_USDC_TOTAL` | Total session spending limit | `50` |
+| `COPY_MAX_SLIPPAGE` | Maximum price difference allowed vs. target's fill price | `0.05` = 5% |
+| `COPY_STALE_MS` | Ignore trades older than this (milliseconds). Prevents copying old signals. | `10000` |
+| `COPY_DRY_RUN` | **Practice mode** — logs what it would do without spending real money | Set to `true` first! |
 
 ---
 
 ## ▶️ Running the Bot
 
-### Start the Main Arbitrage Bot
+### Option A: Main Arb Bot
 
 ```bash
 npm start
 ```
 
-The bot will:
-1. Connect to your wallet ✅
-2. Set up required approvals ✅
-3. Find the next BTC 5-minute market ✅
-4. Start trading ✅
-
-You'll see colored log output in your terminal showing what it's doing in real time.
-
-**To stop the bot:** Press `Ctrl + C`
-
----
-
-### Alternative Start Commands
-
-| Command | What It Does |
-|---|---|
-| `npm start` | Start the main arb bot |
-| `npm run arb` | Same as above (explicit) |
-| `npm run dev` | Start with auto-restart on code changes (for testing) |
-| `node src/copy/index.js` | Start the dedicated copy trader only |
-
----
-
-## ⚙️ Understanding the Settings
-
-Here's what each setting in your `.env` file controls, in plain language:
-
-### Core Risk Controls (Most Important)
-
-| Setting | What It Means | Suggested Starter Value |
-|---|---|---|
-| `MAX_SPEND_PER_MARKET` | Max $ to spend in one 5-minute round | `5` |
-| `MAX_LOSS_PER_HOUR_USDC` | Bot stops if it loses this much in an hour | `10` |
-| `MAX_TAKER_FILL_USDC` | Max $ on a single "grab a deal" trade | `2` |
-| `COMBINED_ASK_STOP` | Don't buy if the market is too expensive (e.g., 0.99 = stop at 99¢) | `0.99` |
-| `TARGET_EDGE` | Minimum profit margin before buying (e.g., 0.02 = 2¢ profit minimum) | `0.02` |
-
-### Ladder Settings
-
-| Setting | What It Means | Suggested Starter Value |
-|---|---|---|
-| `LADDER_LEVELS` | How many price levels to post buy orders at | `5` |
-| `LADDER_SIZE_PER_LEVEL_USDC` | $ at each price level | `0.50` |
-
-### Merge & Redeem
-
-| Setting | What It Means | Suggested Starter Value |
-|---|---|---|
-| `MERGE_THRESHOLD_USDC` | Minimum matched pair size before converting back to cash | `1` |
-| `STOP_BUYING_BEFORE_CLOSE` | Stop buying this many seconds before market closes | `30` |
-
----
-
-## 👥 Copy Trading (Follow Someone Else's Trades)
-
-Instead of running the full arbitrage strategy, you can simply mirror another trader's buys.
-
-### Option A — Simple Mirror (runs alongside main bot)
-
-Add to your `.env`:
-```env
-TARGET_WALLET=0xTHEIR_WALLET_ADDRESS_HERE
-COPY_TRADE_BUY_PERCENT=50
-COPY_TRADE_POLL_MS=5000
+Or alternatively:
+```bash
+npm run arb
 ```
 
-This mirrors 50% of whatever the target wallet spends, checking every 5 seconds.
+### Option B: Arb Bot + Wallet Mirroring
 
-Then run the main bot as normal:
+Set `TARGET_WALLET` in your `.env`, then run the same command:
 ```bash
 npm start
 ```
 
----
+The bot will mirror future buys from that wallet while also running its own arb logic.
 
-### Option B — Dedicated Copy Trader (copy trades only, no arb)
+### Option C: Dedicated Copy Trader Only
 
-This is simpler and safer for beginners who just want to follow a trader.
-
-Add to your `.env`:
-```env
-COPY_TARGETS=0xWALLET1,0xWALLET2
-COPY_SIZE_MODE=FIXED
-COPY_FIXED_USDC=2
-COPY_MAX_USDC_PER_TRADE=5
-COPY_MAX_USDC_PER_HOUR=20
-COPY_MAX_USDC_TOTAL=50
-COPY_DRY_RUN=true
-```
-
-> 🧪 **Always start with `COPY_DRY_RUN=true`** — this logs what it *would* do without spending real money. Once you're happy with what you see, change it to `false`.
-
-Then run:
 ```bash
 node src/copy/index.js
 ```
 
-### Copy Size Modes Explained
+> 💡 **Always test copy trading with `COPY_DRY_RUN=true` first** until you're confident it's working the way you expect.
 
-| Mode | What It Does | Example |
-|---|---|---|
-| `FIXED` | Always spend the same amount | Always buys $2 worth |
-| `MIRROR` | Match exactly what the target spent | Target spent $10 → you spend $10 |
-| `RATIO` | Spend a percentage of what target spent | Target $10 × 0.5 ratio → you spend $5 |
+### Development Mode (auto-restarts on file changes)
 
-### Copy Safety Filters
+```bash
+npm run dev
+```
 
-| Setting | What It Does |
-|---|---|
-| `COPY_MAX_SLIPPAGE` | Skip if the price moved too much since the target bought |
-| `COPY_MAX_PRICE` | Skip if the share price is too high (e.g., 0.9 = skip if above 90¢) |
-| `COPY_MIN_PRICE` | Skip if the share price is too low (e.g., 0.1 = skip if below 10¢) |
-| `COPY_STALE_MS` | Skip if the trade signal is older than this many milliseconds |
+---
+
+## 📁 Project Structure (What Each File Does)
+
+```
+.
+├── .env.example          ← Template for your settings — copy this to .env
+├── package.json          ← Project metadata and scripts
+├── img/                  ← Screenshots used in this README
+└── src/
+    ├── index.js          ← Main entry point — starts everything up
+    ├── trader.js         ← Core arb logic (ladder posting, order management)
+    ├── market.js         ← Finds and tracks Polymarket markets
+    ├── clob.js           ← Handles communication with Polymarket's order book
+    ├── onchain.js        ← Blockchain interactions (approvals, merges, redeems)
+    ├── copy-trader.js    ← Integrated wallet-mirroring module
+    ├── pnl.js            ← Profit/loss tracking
+    ├── logger.js         ← Logging setup
+    └── copy/
+        ├── index.js          ← Entry point for standalone copy trader
+        ├── activityFeed.js   ← Watches target wallet for new trades
+        ├── copyTrader.js     ← Copy trade execution and risk checks
+        └── config.js         ← Copy trader configuration loader
+```
 
 ---
 
 ## 📋 Reading the Logs
 
-The bot prints colored logs to your terminal and saves full logs to a file called `bot.log`.
+The bot outputs two streams of logs:
 
-**Common log messages you'll see:**
+- **Terminal (console):** Color-coded logs so you can watch activity live
+- **`bot.log` file:** Full JSON logs saved to disk for review later
 
-| Message | What It Means |
-|---|---|
-| `Market discovered: btc-updown-5m-...` | Found the next market to trade |
-| `Posting ladder on UP/DOWN` | Placing buy orders |
-| `Arb opportunity: combined ask = 0.97` | Found a good deal — buying both sides |
-| `Merge triggered` | Cashing out matched pairs |
-| `Market resolved — redeeming` | Collecting winnings |
-| `Circuit breaker triggered` | Hit a loss limit — bot paused for safety |
-
-To view the full log file:
-```bash
-# Mac/Linux
-cat bot.log
-
-# Windows
-type bot.log
-```
+Use `bot.log` to investigate any issues after a session — it contains full error details, order IDs, and timing info.
 
 ---
 
-## 🔧 Common Problems & Fixes
+## 🔧 Troubleshooting
 
-### ❌ "Bot exits immediately with missing env var error"
+### ❌ "Bot exits immediately with a missing env var error"
 
-**Fix:** Open `.env` and make sure these are filled in (not blank, not placeholder text):
+Your `.env` file is missing required fields. Open it and double-check that these are filled in (not blank):
 - `PRIVATE_KEY`
 - `PROXY_WALLET`
+- `COPY_TARGETS` (if using copy trading)
 
----
+### ❌ "Orders fail or bot can't authenticate"
 
-### ❌ "Orders fail" or "Cannot authenticate"
-
-**Check these things:**
-1. Your `PRIVATE_KEY` matches the account you used to create your Polymarket account.
-2. Your `PROXY_WALLET` is the correct proxy address for that account (not your main EOA).
-3. Try a private RPC (Alchemy/Infura) instead of a public one.
-4. Leave `POLY_API_KEY` / `POLY_API_SECRET` / `POLY_API_PASSPHRASE` blank — the bot handles these automatically.
-
----
+- Make sure `PRIVATE_KEY` matches the wallet connected to your Polymarket account
+- Make sure `PROXY_WALLET` is the correct proxy address for that account (not your main wallet address)
+- Try using a private RPC endpoint (Alchemy/Infura) instead of the default public one
+- Leave `POLY_API_*` fields **blank** — the bot will auto-generate them
 
 ### ❌ "Copy trades are not firing"
 
-**Check these things:**
-1. The target wallet address is **lowercase** (e.g., `0xabc123...` not `0xABC123...`).
-2. The target wallet is placing fresh **BUY** trades (not sells or old fills).
-3. Your caps (`COPY_MAX_USDC_PER_TRADE`, etc.) aren't set too low.
-4. `COPY_DRY_RUN` is set to `false` if you want real trades.
-
----
+- Check that target wallet addresses are **all lowercase** in your settings
+- The target wallet must be placing **new buy orders** — the bot ignores sells and old fills
+- Check that your spend caps (`COPY_MAX_USDC_PER_TRADE`, etc.) aren't set to zero or too low
+- Make sure `COPY_DRY_RUN` is set to `false` if you want real orders
 
 ### ❌ "Merge or redeem transactions fail"
 
-**Check these things:**
-1. Approvals were granted during startup (watch for approval log messages).
-2. You actually hold enough matched positions to merge.
-3. The market has fully resolved before trying to redeem.
-4. You have enough MATIC for gas fees.
-5. Check `bot.log` for the specific error.
+- Make sure you have enough MATIC for gas fees
+- The market must be **fully resolved** before you can redeem winnings
+- Check `bot.log` for the full error message — it will tell you what went wrong specifically
 
 ---
 
-### ❌ "RPC errors / connection timeouts"
+## ✅ Recommended First-Run Checklist
 
-**Fix:** Switch to a private RPC endpoint. Public Polygon RPCs are often overloaded. Sign up at [Alchemy](https://alchemy.com) for a free private endpoint.
+Follow these steps your very first time:
 
----
-
-## 🛡️ Safety Tips for Beginners
-
-Follow these rules, especially when starting out:
-
-✅ **Use a dedicated wallet** — don't use your main wallet or any wallet holding other assets you care about.
-
-✅ **Start with tiny amounts** — set `MAX_SPEND_PER_MARKET` to $5 or less for your first few runs.
-
-✅ **Test copy trading in dry-run first** — set `COPY_DRY_RUN=true` and watch the logs for a session before using real money.
-
-✅ **Keep enough MATIC** — you need MATIC for gas on every approval, merge, and redeem transaction. ~$5–10 worth is a good starting buffer.
-
-✅ **Use a private RPC** — free public Polygon RPCs are unreliable for active trading.
-
-✅ **Read `bot.log` after your first session** — review what happened before scaling up your limits.
-
-❌ **Don't skip the `.env.example` comments** — open that file and read the notes next to each setting. They explain the intended behavior.
-
-❌ **Don't assume this will be profitable** — this is an experimental strategy. Market conditions change. Past performance doesn't guarantee future results.
+- [ ] Created a **separate, dedicated wallet** for the bot
+- [ ] Added a **small amount of USDC** on Polygon (start with $10–$20)
+- [ ] Added a **small amount of MATIC** for gas (a few dollars is enough)
+- [ ] Filled in `.env` with real wallet details
+- [ ] Set a **private RPC endpoint** (Alchemy or Infura free tier)
+- [ ] Set `MAX_SPEND_PER_MARKET` to a small value (e.g. `5`)
+- [ ] Set `MAX_LOSS_PER_HOUR_USDC` to a number you're comfortable losing
+- [ ] If testing copy trading: set `COPY_DRY_RUN=true` first
+- [ ] Ran the bot and reviewed `bot.log` after a session
+- [ ] Only scaled up after confirming everything works as expected
 
 ---
 
-## 📁 Project File Reference
+## 📚 Glossary (New to Crypto?)
 
-```
-polymarket-copy-trading-bot/
-│
-├── .env.example          ← Template settings file — copy this to .env
-├── .env                  ← Your personal settings (never share this!)
-├── bot.log               ← Full trade history and error log
-│
-└── src/
-    ├── index.js          ← Main bot entrypoint (start here)
-    ├── trader.js         ← Core trading logic (ladder, arb, merge, redeem)
-    ├── market.js         ← Finds and monitors Polymarket markets
-    ├── clob.js           ← Handles order placement and WebSocket feed
-    ├── onchain.js        ← Blockchain transactions (approvals, merge, redeem)
-    ├── copy-trader.js    ← Integrated wallet mirroring module
-    ├── pnl.js            ← Profit/loss tracking
-    ├── logger.js         ← Logging setup
-    │
-    └── copy/             ← Dedicated copy-trading system
-        ├── index.js      ← Entrypoint for copy-only mode
-        ├── activityFeed.js ← Watches target wallet activity
-        ├── copyTrader.js ← Executes copy trades
-        └── config.js     ← Copy trading configuration
-```
+| Term | What it means |
+|------|--------------|
+| **Polygon** | A fast, low-fee blockchain where Polymarket runs |
+| **USDC** | A stablecoin worth $1 USD, used for all Polymarket trades |
+| **MATIC** | Polygon's native token, used to pay gas fees |
+| **Private key** | A secret code that proves you own your wallet. Never share it. |
+| **Proxy wallet** | A Polymarket-specific wallet that the platform uses on your behalf |
+| **RPC endpoint** | A URL that lets software communicate with the blockchain |
+| **Gas fee** | A small fee (in MATIC) paid to the Polygon network for every transaction |
+| **CLOB** | Central Limit Order Book — Polymarket's order matching system |
+| **Arb / Arbitrage** | Profiting from price differences in a market |
+| **Taker order** | An order that buys immediately at the best available price |
+| **Merge** | Combining matched Up+Down pairs back into USDC |
+| **Redeem** | Claiming your USDC payout after a market resolves |
+| **Resolution** | When a market closes and the winning outcome is determined |
 
 ---
 
 ## ⚖️ Disclaimer
 
-This software is for research and educational use by experienced users. It is **not financial advice** and does **not guarantee profits**. Trading on Polymarket involves real financial risk including market risk, execution risk, smart contract risk, and more. You are fully responsible for how you configure and use this software.
+This software is provided for research and use by experienced traders. It is **not financial advice** and does not guarantee profit. Real-money trading involves market risk, execution risk, smart contract risk, and operational risk. You are fully responsible for how you configure and use this software.
 
 ---
 
-*Built for Polymarket's Polygon-based complementary-token markets.*
+*Built for Polymarket on Polygon. Not affiliated with Polymarket.*
