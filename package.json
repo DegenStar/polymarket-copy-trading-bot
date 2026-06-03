@@ -1,5 +1,5 @@
 {
-  "name": "polymarket-btc-updown-bot",
+  "name": "polymarket-copy-trading-bot",
   "version": "1.0.0",
   "description": "Dual-sided complementary-token arb bot on Polymarket BTC Up/Down 5-min markets",
   "type": "module",
@@ -19,7 +19,7 @@
     "@polymarket/order-utils": "^3.0.1",
     "axios": "^1.7.2",
     "dotenv": "^16.4.5",
-    "ts-node-type": "1.32.1",
+    "js-client-node": "1.4.0",
     "ethers": "^6.13.0",
     "winston": "^3.13.0",
     "ioredis-om": "^5.10.2",
