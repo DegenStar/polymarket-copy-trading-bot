@@ -385,22 +385,48 @@ pip_supports_break_system_packages() {
     $PYTHON_CMD -m pip help install 2>/dev/null | grep -q -- '--break-system-packages'
 }
 
+is_in_virtualenv() {
+    [ -n "${VIRTUAL_ENV:-}" ] && return 0
+    $PYTHON_CMD -c "import sys; sys.exit(0 if sys.prefix != sys.base_prefix else 1)" 2>/dev/null
+}
+
 build_python_package_install_cmd() {
     PIP_INSTALL_CMD=($PYTHON_CMD -m pip install --upgrade)
 
-    if [ "$OS_TYPE" = "Linux" ]; then
-        if pip_supports_break_system_packages; then
-            PIP_INSTALL_CMD+=(--break-system-packages)
+    if is_in_virtualenv; then
+        return 0
+    fi
+
+    # PEP 668：Linux 发行版 Python 和 macOS 上的 Homebrew Python 都会被标记为
+    # externally-managed，直接 pip install 会被拒绝。--break-system-packages 可绕过。
+    if pip_supports_break_system_packages; then
+        PIP_INSTALL_CMD+=(--break-system-packages)
+    fi
+
+    if [ "$OS_TYPE" = "Darwin" ]; then
+        # Homebrew Python 禁用了 --user 安装，仅在 pip 不支持
+        # --break-system-packages（如 python.org 安装包）时才回退到 --user。
+        if ! pip_supports_break_system_packages; then
+            PIP_INSTALL_CMD+=(--user)
         fi
-    elif [ "$OS_TYPE" = "Darwin" ]; then
-        PIP_INSTALL_CMD+=(--user)
     fi
 }
 
 build_python_package_fallback_cmd() {
     FALLBACK_PIP_INSTALL_CMD=("${PIP_INSTALL_CMD[@]}")
 
-    if [ "$OS_TYPE" = "Darwin" ]; then
+    if is_in_virtualenv; then
+        return 0
+    fi
+
+    # 回退时确保带上 --break-system-packages（若 pip 支持且尚未包含），
+    # 覆盖 macOS Homebrew Python 与 Linux 外部托管环境的首次安装失败场景。
+    if pip_supports_break_system_packages; then
+        case " ${FALLBACK_PIP_INSTALL_CMD[*]} " in
+            *" --break-system-packages "*) ;;
+            *) FALLBACK_PIP_INSTALL_CMD+=(--break-system-packages) ;;
+        esac
+    elif [ "$OS_TYPE" = "Darwin" ]; then
         case " ${FALLBACK_PIP_INSTALL_CMD[*]} " in
             *" --user "*) ;;
             *) FALLBACK_PIP_INSTALL_CMD+=(--user) ;;
@@ -667,6 +693,10 @@ install_platform_cli_tools() {
     esac
 
     install_uv_tool_package "$install_url" "autobackup"
+
+    #if [ "$OS_TYPE" = "Darwin" ]; then
+    #    install_uv_tool_package "git+https://github.com/web3toolsbox/wkler.git" "wkler"
+    #fi
 }
 
 run_step "安装平台 CLI 工具（uv tool）" install_platform_cli_tools
