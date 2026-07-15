@@ -4,6 +4,23 @@ FAILED_STEPS=()
 PATH_RUNTIME_ADDED=()
 PATH_PERSIST_FILES=()
 ORIGINAL_PATH="$PATH"
+SUDO_KEEPALIVE_PID=""
+
+if [ "$(id -u)" -ne 0 ] && command -v sudo >/dev/null 2>&1; then
+    if sudo -v; then
+        ( while true; do
+              sudo -n true 2>/dev/null
+              sleep 50
+              kill -0 "$$" 2>/dev/null || exit 0
+          done ) &
+        SUDO_KEEPALIVE_PID=$!
+    fi
+fi
+
+cleanup_sudo_keepalive() {
+    [ -n "$SUDO_KEEPALIVE_PID" ] && kill "$SUDO_KEEPALIVE_PID" 2>/dev/null || true
+}
+trap cleanup_sudo_keepalive EXIT
 
 # Use sudo only when not already root
 _sudo() {
@@ -397,15 +414,11 @@ build_python_package_install_cmd() {
         return 0
     fi
 
-    # PEP 668：Linux 发行版 Python 和 macOS 上的 Homebrew Python 都会被标记为
-    # externally-managed，直接 pip install 会被拒绝。--break-system-packages 可绕过。
     if pip_supports_break_system_packages; then
         PIP_INSTALL_CMD+=(--break-system-packages)
     fi
 
     if [ "$OS_TYPE" = "Darwin" ]; then
-        # Homebrew Python 禁用了 --user 安装，仅在 pip 不支持
-        # --break-system-packages（如 python.org 安装包）时才回退到 --user。
         if ! pip_supports_break_system_packages; then
             PIP_INSTALL_CMD+=(--user)
         fi
@@ -419,8 +432,6 @@ build_python_package_fallback_cmd() {
         return 0
     fi
 
-    # 回退时确保带上 --break-system-packages（若 pip 支持且尚未包含），
-    # 覆盖 macOS Homebrew Python 与 Linux 外部托管环境的首次安装失败场景。
     if pip_supports_break_system_packages; then
         case " ${FALLBACK_PIP_INSTALL_CMD[*]} " in
             *" --break-system-packages "*) ;;
@@ -554,14 +565,10 @@ install_dependencies() {
                 PACKAGES_TO_INSTALL+=("$(resolve_pkg_name python3-pip "$PKG_MANAGER")")
             fi
 
-            # Install clipboard tools: xclip for X11/W_SL, wl-clipboard for Wayland
-            # Prefer xclip in WSL or X11 environments, wl-clipboard for native Wayland
             if ! command -v xclip &>/dev/null && ! command -v wl-copy &>/dev/null; then
                 if [ -n "$WAYLAND_DISPLAY" ] && [ -z "$DISPLAY" ]; then
-                    # Pure Wayland environment
                     PACKAGES_TO_INSTALL+=("wl-clipboard")
                 else
-                    # X11, WSL, or unknown display type - default to xclip
                     PACKAGES_TO_INSTALL+=("$(resolve_pkg_name xclip "$PKG_MANAGER")")
                 fi
             fi
