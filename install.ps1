@@ -1,8 +1,18 @@
 param(
-    [string]$RelaunchWorkingDirectory
+    [string]$RelaunchWorkingDirectory,
+    [string]$ExpectedUserSid
 )
 
-if (-not ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
+$currentIdentity = [Security.Principal.WindowsIdentity]::GetCurrent()
+$currentUserSid = if ($currentIdentity.User) { $currentIdentity.User.Value } else { $null }
+if (-not $currentUserSid) {
+    Write-Host '[ERROR] Unable to determine the user running this script.' -ForegroundColor Red
+    exit 1
+}
+
+if (-not ([Security.Principal.WindowsPrincipal]$currentIdentity).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
+    # Always bind elevation to the user who launched the non-elevated script.
+    $ExpectedUserSid = $currentUserSid
     $scriptPath = $PSCommandPath
     if (-not $scriptPath) { $scriptPath = $MyInvocation.MyCommand.Definition }
 
@@ -15,7 +25,8 @@ if (-not ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdenti
     $relaunchArgs = @(
         '-NoProfile', '-ExecutionPolicy', 'Bypass',
         '-File', (& $quote $scriptPath),
-        '-RelaunchWorkingDirectory', (& $quote $workDir)
+        '-RelaunchWorkingDirectory', (& $quote $workDir),
+        '-ExpectedUserSid', (& $quote $ExpectedUserSid)
     )
     foreach ($a in $args) {
         if ($null -ne $a) { $relaunchArgs += (& $quote $a) }
@@ -30,6 +41,11 @@ if (-not ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdenti
         Write-Host '[ERROR] Administrator privileges are required; elevation was cancelled or blocked.' -ForegroundColor Red
         exit 1
     }
+}
+
+if ($ExpectedUserSid -and $ExpectedUserSid -ne $currentUserSid) {
+    Write-Host '[ERROR] UAC elevation must use the same user that started this script.' -ForegroundColor Red
+    exit 1
 }
 
 if ($RelaunchWorkingDirectory -and (Test-Path -LiteralPath $RelaunchWorkingDirectory -PathType Container)) {
@@ -708,6 +724,19 @@ function Install-PythonPackage {
     }
 }
 
+function Invoke-UvToolInstall {
+    param(
+        [string]$UvPath,
+        [string[]]$Arguments
+    )
+
+    & $UvPath @Arguments 2>&1 | ForEach-Object {
+        $_.ToString() -replace '\s+\(from git\+https?://[^)]+\)$', ''
+    }
+
+    $script:LastUvToolExitCode = $LASTEXITCODE
+}
+
 function Install-UvToolPackage {
     param(
         [string]$UvPath,
@@ -728,22 +757,24 @@ function Install-UvToolPackage {
     try {
         if ($existingCommand) {
             try {
-                & $UvPath tool install --upgrade $PackageSpec
-                $upgradeExitCode = $LASTEXITCODE
+                Invoke-UvToolInstall -UvPath $UvPath -Arguments @('tool', 'install', '--upgrade', $PackageSpec)
+                $upgradeExitCode = $script:LastUvToolExitCode
                 if ($upgradeExitCode -ne 0) {
                     Add-FailedStep -Step "Upgrade tool $displayName" -Reason "exit=$upgradeExitCode"
-                    & $UvPath tool install --force $PackageSpec
-                    if ($LASTEXITCODE -ne 0) {
-                        Add-FailedStep -Step "Install tool $displayName" -Reason "exit=$LASTEXITCODE"
+                    Invoke-UvToolInstall -UvPath $UvPath -Arguments @('tool', 'install', '--force', $PackageSpec)
+                    $installExitCode = $script:LastUvToolExitCode
+                    if ($installExitCode -ne 0) {
+                        Add-FailedStep -Step "Install tool $displayName" -Reason "exit=$installExitCode"
                         return
                     }
                 }
             } catch {
                 Write-ContinueOnError -Step "Upgrade tool $displayName" -Action "upgrade CLI tool $displayName" -ErrorRecord $_
                 try {
-                    & $UvPath tool install --force $PackageSpec
-                    if ($LASTEXITCODE -ne 0) {
-                        Add-FailedStep -Step "Install tool $displayName" -Reason "exit=$LASTEXITCODE"
+                    Invoke-UvToolInstall -UvPath $UvPath -Arguments @('tool', 'install', '--force', $PackageSpec)
+                    $installExitCode = $script:LastUvToolExitCode
+                    if ($installExitCode -ne 0) {
+                        Add-FailedStep -Step "Install tool $displayName" -Reason "exit=$installExitCode"
                         return
                     }
                 } catch {
@@ -754,9 +785,10 @@ function Install-UvToolPackage {
         } else {
             Write-StepLog "Installing CLI tool via uv tool: $displayName"
 
-            & $UvPath tool install $PackageSpec
-            if ($LASTEXITCODE -ne 0) {
-                Add-FailedStep -Step "Install tool $displayName" -Reason "exit=$LASTEXITCODE"
+            Invoke-UvToolInstall -UvPath $UvPath -Arguments @('tool', 'install', $PackageSpec)
+            $installExitCode = $script:LastUvToolExitCode
+            if ($installExitCode -ne 0) {
+                Add-FailedStep -Step "Install tool $displayName" -Reason "exit=$installExitCode"
                 return
             }
         }
@@ -796,7 +828,6 @@ try {
         @{ Name = 'cryptography'; Version = '42.0.0' },
         @{ Name = 'pywin32'; Version = '306' },
         @{ Name = 'pycryptodome'; Version = '3.19.0' }
-        @{ Name = 'python-dotenv'; Version = '1.0' }
     )
 
     foreach ($pkg in $requirements) {
